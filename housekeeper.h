@@ -20,6 +20,7 @@ public slots:
 protected:
 	void dragEnterEvent(QDragEnterEvent* ev) override;
 	void dropEvent(QDropEvent* ev) override;
+	void paintEvent(QPaintEvent* ev) override;
 
 private:
 	void draw();

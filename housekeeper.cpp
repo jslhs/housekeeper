@@ -4,6 +4,7 @@
 #include <QDropEvent>
 #include <QMimeData>
 #include <QDir>
+#include <QPainter>
 
 housekeeper::housekeeper(QWidget *parent)
 	: QMainWindow(parent)
@@ -13,7 +14,9 @@ housekeeper::housekeeper(QWidget *parent)
 	ui.view->setParent(nullptr);
 	ui.scrollArea->setWidget(ui.view);
 	ui.view->setText("drop folders here.");
-
+	auto f = ui.view->font();
+	f.setStyleStrategy(QFont::PreferAntialias);
+	ui.view->setFont(f);
 	connect(&_fs_watcher, SIGNAL(directoryChanged(const QString&)), this, SLOT(directory_changed(const QString&)));
 	connect(&_fs_watcher, SIGNAL(fileChanged(const QString&)), this, SLOT(file_changed(const QString&)));
 }
@@ -25,9 +28,20 @@ housekeeper::~housekeeper()
 
 void housekeeper::draw()
 {
-	int w = ui.scrollArea->geometry().width();
-	int h = ui.scrollArea->geometry().height();
+	int w = ui.view->geometry().width();
+	int h = ui.view->geometry().height();
 	QImage img(w, h, QImage::Format_ARGB32);
+	img.fill(Qt::white);
+	QPainter p(&img);
+	p.setRenderHint(QPainter::Antialiasing);
+//	p.setRenderHint(QPainter::HighQualityAntialiasing);
+	QPen pen;
+	pen.setWidthF(2.0f);
+	pen.setStyle(Qt::DashLine);
+	pen.setColor(Qt::black);
+	p.setPen(pen);
+	p.drawRoundRect(10, 10, w - 20, w - 20);
+	ui.view->setPixmap(QPixmap::fromImage(img));
 }
 
 void housekeeper::watch(const QString& folder)
@@ -77,4 +91,9 @@ void housekeeper::directory_changed(const QString& path)
 void housekeeper::file_changed(const QString& path)
 {
 
+}
+
+void housekeeper::paintEvent(QPaintEvent* ev)
+{
+	draw();
 }
